@@ -1,0 +1,82 @@
+def distanceVectors(v1, v2):
+    sum = 0
+    for i in range(len(v1)):
+        sum += (v1[i] - v2[i]) ** 2
+    return sum
+
+
+def clusterMean(vectors):
+    resVector = []
+    for i in range(len(vectors[0])):
+        sumi = 0
+        for vector in vectors:
+            sumi += vector[i]
+        resVector.append(sumi / len(vectors))
+    return resVector
+
+
+def kmeansAlgo(x, k, maxIter=200):
+    e = 0.001
+    maxDiff = 1
+    counter = 0
+    clusters = x[:k]
+    while maxDiff > e and counter < maxIter:
+        counter += 1
+        clustersObjects = [[] for _ in range(k)]
+        for i in range(len(x)):
+            distanceList = [distanceVectors(x[i], clusters[j]) for j in range(k)]
+            minIndex = distanceList.index(min(distanceList))
+            clustersObjects[minIndex].append(x[i])
+        copyClusters = clusters.copy()
+        for j in range(k):
+            clusters[j] = clusterMean(clustersObjects[j])
+        maxDiff = (max([distanceVectors(clusters[i], copyClusters[i]) for i in range(k)])) ** 0.5
+    for i in range(k):
+        for j in range(len(clusters[0])):
+            clusters[i][j] = "{:.4f}".format(clusters[i][j])
+    return clusters
+
+
+def main(args):
+    if len(args) > 4 or len(args) < 3:
+        print("invalid input")
+        quit()
+        
+    elif len(args) == 3:
+        maxIter = 200
+        outputFileName = args[2]
+        
+    else:
+        maxIter = args[2]
+        if maxIter < 1:
+            print("invalid input")
+            quit()
+        outputFileName = args[3]
+    
+    inputFilePath = args[1]
+    k = args[0]
+    f = open(inputFilePath, "r")
+    lines = f.readlines()
+    x = []
+    for line in lines:
+        vectorStr = line.split(",")
+        vectorFloat = []
+        for num in vectorStr:
+            vectorFloat.append(float(num))
+        x.append(vectorFloat)
+    if k <= 1 or k >= len(x):
+        print("invalid input")
+        quit()
+        
+    clusters = kmeansAlgo(x, k, maxIter)
+    outFile = open(outputFileName, "w")
+    
+    for cluster in clusters:
+        res = ""
+        for num in cluster:
+            res += str(num) + ","
+        res = res[:len(res) - 1]
+        outFile.write(res+'\n')
+       # outFile.close()
+args = [3, "C:/Users/Administrator/Downloads/input_1.txt", 200, "outp"]
+main(args)
